@@ -18,6 +18,11 @@ app.set("view engine", "ejs");
 // tell EJS which layout to use
 app.set('layout', 'layouts/base')
 
+// enable form submission via browser
+app.use(express.urlencoded({
+    extended: false
+}));
+
 // creat a connection pool
 const connection = createPool(
     {
@@ -47,24 +52,52 @@ app.get('/customers', async function(req,res){
         SELECT * FROM Customers
             JOIN Companies ON
                 Customers.company_id = Companies.company_id
+        ORDER BY Customers.first_name, Customers.last_name
         `
     // connection.query takes in the SQL statement as parameter
     // and returns an array of two elements
     // index 0 is the results
     // index 1 is some metadata
-    const responses = await connection.query({
+    const [customers] = await connection.query({
         "sql": sql,
         "nestTables": true
     });
     // res.send(responses[0]);
-    console.log(responses[0])
+    console.log(customers)
     res.render('customers/index', {
-        customers: responses[0]
+        customers: customers
     })
 })
 
+// one route to display the form
 app.get('/customers/create', async function(req,res){
-    res.render('customers/create')
+    const [companies] = await connection.execute("SELECT * FROM Companies");
+    const [employees] = await connection.execute("SELECT * FROM Employees");
+  
+    res.render('customers/create', {
+         companies, employees
+    })
+})
+
+// one route to process the form
+app.post('/customers/create', async function(req,res){
+    // whenever the user has submitted via the form
+    // is in req.body
+    console.log(req.body);
+
+    const sql = `
+        INSERT INTO Customers (first_name, last_name, email, company_id, employee_id)
+            VALUES (?, ?, ?, ?, ?);
+    `
+    await connection.execute(sql, [
+        req.body.first_name,
+        req.body.last_name,
+        req.body.email,
+        req.body.company_id,
+        req.body.employee_id
+    ]);
+
+    res.redirect('/customers')
 })
 
 app.listen(3000, function(){
