@@ -11,6 +11,7 @@ All Customers
             <th>Last Name</th>
             <th>Email</th>
             <th>Company</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -28,6 +29,15 @@ All Customers
                 <td>
                     <%= c.Companies.name %>
                 </td>
+                <td>
+                    <a class="btn btn-primary btn-sm"
+                        href="/customers/<%= c.Customers.customer_id %>/update"
+                    >Update</a>
+
+                    <a class="btn btn-danger btn-sm" href="/customers/<%= c.Customers.customer_id %>/delete">
+                        Delete
+                    </a>
+                </td>   
             </tr>
             <% } %>
     </tbody>

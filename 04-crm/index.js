@@ -8,7 +8,7 @@ const app = express();
 
 // read in our .env file
 require("dotenv").config();
-const {createPool} = require('mysql2/promise');
+const { createPool } = require('mysql2/promise');
 
 app.use(expressLayouts)
 
@@ -35,7 +35,7 @@ const connection = createPool(
     }
 )
 
-app.get('/', function(req,res){
+app.get('/', function (req, res) {
 
     const todayDate = new Date().toLocaleDateString("en-GB");
     // the first arg to res.render is the name 
@@ -47,7 +47,7 @@ app.get('/', function(req,res){
 
 });
 
-app.get('/customers', async function(req,res){
+app.get('/customers', async function (req, res) {
     const sql = `
         SELECT * FROM Customers
             JOIN Companies ON
@@ -70,17 +70,17 @@ app.get('/customers', async function(req,res){
 })
 
 // one route to display the form
-app.get('/customers/create', async function(req,res){
+app.get('/customers/create', async function (req, res) {
     const [companies] = await connection.execute("SELECT * FROM Companies");
     const [employees] = await connection.execute("SELECT * FROM Employees");
-  
+
     res.render('customers/create', {
-         companies, employees
+        companies, employees
     })
 })
 
 // one route to process the form
-app.post('/customers/create', async function(req,res){
+app.post('/customers/create', async function (req, res) {
     // whenever the user has submitted via the form
     // is in req.body
     console.log(req.body);
@@ -100,6 +100,50 @@ app.post('/customers/create', async function(req,res){
     res.redirect('/customers')
 })
 
-app.listen(3000, function(){
+// confirm with the user if they want to delete
+app.get('/customers/:customer_id/delete', async function (req, res) {
+    // use a prepared statement to query the database
+    const [customers] = await connection.execute(
+        "SELECT * FROM Customers where customer_id = ?", [req.params.customer_id]);
+
+    // connection.execute will return an array if we do a SELECT
+    // so if we only want the first result, we need to get from index 0.
+    const customer = customers[0];
+
+    res.render('customers/delete', {
+        customer
+    })
+})
+
+// process the delete
+app.post('/customers/:customer_id/delete', async function (req, res) {
+    const sql = `DELETE FROM Customers WHERE customer_id = ?`;
+    await connection.execute(sql, [req.params.customer_id]);
+    res.redirect('/customers')
+
+})
+
+// one route to display the edit form
+app.get('/customers/:customer_id/update', async function (req, res) {
+    // use a prepared statement to query the database
+    const [customers] = await connection.execute(
+        "SELECT * FROM Customers where customer_id = ?", [req.params.customer_id]);
+
+    // connection.execute will return an array if we do a SELECT
+    // so if we only want the first result, we need to get from index 0.
+    const customer = customers[0];
+
+    const [companies] = await connection.execute("SELECT * FROM Companies");
+    const [employees] = await connection.execute("SELECT * FROM Employees");
+
+    res.render('customers/edit', {
+        customer, companies, employees
+
+    })
+})
+
+// one route to process the form
+
+app.listen(3000, function () {
     console.log("Server started");
 })
