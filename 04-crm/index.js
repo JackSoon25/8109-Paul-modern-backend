@@ -8,7 +8,12 @@ const app = express();
 
 // read in our .env file
 require("dotenv").config();
-const { createPool } = require('mysql2/promise');
+
+// read in the connection variable
+const connection = require('./db');
+
+// read in the other routers
+const prdouctRouter = require('./productRouter');
 
 app.use(expressLayouts)
 
@@ -23,17 +28,12 @@ app.use(express.urlencoded({
     extended: true
 }));
 
-// creat a connection pool
-const connection = createPool(
-    {
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        database: process.env.DB_NAME,
-        password: process.env.DB_PASSWORD,
-        port: process.env.DB_PORT
-
-    }
-)
+// register the productRouter with express
+// if the url begins with "/products",
+// pass the remainder of the URL to the productRouter
+// for example: we go to /products/create
+// the /products tell Express that we want to use the productRouter
+app.use('/products', prdouctRouter);
 
 app.get('/', function (req, res) {
 
