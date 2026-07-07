@@ -34,8 +34,10 @@ CREATE TABLE IF NOT EXISTS Customers (
     email VARCHAR(255),
     company_id INT NOT NULL,
     employee_id INT,
+    date_joined DATETIME NOT NULL DEFAULT NOW(),
+    annual_salary INT, 
     FOREIGN KEY (company_id) REFERENCES Companies(company_id),
-    FOREIGN KEY (employee_id) REFERENCES Employees(employee_id) SET NULL
+    FOREIGN KEY (employee_id) REFERENCES Employees(employee_id)
 );
 
 -- Products

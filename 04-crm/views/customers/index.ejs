@@ -9,12 +9,22 @@
         <form method="GET" class="mt-2 mb-2">
             <div>
                 <label>First Name</label>
-                <input type="text" name="first_name" class="form-control"  value="<%= searchParams.first_name %>"/>
+                <input type="text" name="first_name" class="form-control" value="<%= searchParams.first_name %>" />
             </div>
 
             <div>
                 <label>Last Name</label>
                 <input type="text" name="last_name" class="form-control" value="<%= searchParams.last_name %>" />
+            </div>
+
+            <div>
+                <label>Joined Before</label>
+                <input type="date" name="joined_before" class="form-control" />
+            </div>
+
+            <div>
+                <label>Joined After</label>
+                <input type="date" name="joined_after" class="form-control" />
             </div>
 
             <button class="btn btn-primary mt-3">Search</button>
@@ -31,6 +41,8 @@
                     <th>Last Name</th>
                     <th>Email</th>
                     <th>Company</th>
+                    <th>Date Joined</th>
+                    <th>Annual Salary</th>
                     <th></th>
                 </tr>
             </thead>
@@ -48,6 +60,12 @@
                         </td>
                         <td>
                             <%= c.Companies.name %>
+                        </td>
+                        <td>
+                            <%= new Date(c.Customers.date_joined).toLocaleDateString('en-GB') %>
+                        </td>
+                        <td>
+                            <%= c.Customers.annual_salary %>
                         </td>
                         <td>
                             <a class="btn btn-primary btn-sm"

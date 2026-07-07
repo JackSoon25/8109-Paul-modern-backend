@@ -55,13 +55,13 @@ INSERT INTO Products (name, description) VALUES
 -- Customers
 -- Each customer has EXACTLY ONE employee
 -- =========================
-INSERT INTO Customers (first_name, last_name, email, company_id, employee_id) VALUES
-('Andrew', 'Collins', 'andrew.collins@northbridge.com', 1, 1),
-('Melissa', 'Turner', 'melissa.turner@northbridge.com', 1, 1),
-('Robert', 'Kim', 'robert.kim@summitridge.com', 2, 2),
-('Natalie', 'Brooks', 'natalie.brooks@summitridge.com', 2, 2),
-('Ethan', 'Price', 'ethan.price@northbridge.com', 1, 3),
-('Sophia', 'Lopez', 'sophia.lopez@summitridge.com', 2, 3);
+INSERT INTO Customers (first_name, last_name, email, company_id, employee_id, date_joined, annual_salary) VALUES
+('Andrew', 'Collins', 'andrew.collins@northbridge.com', 1, 1, "2020-01-01", 100000),
+('Melissa', 'Turner', 'melissa.turner@northbridge.com', 1, 1, "2020-03-01", 200000),
+('Robert', 'Kim', 'robert.kim@summitridge.com', 2, 2, "2022-01-01", 50000),
+('Natalie', 'Brooks', 'natalie.brooks@summitridge.com', 2, 2, "2023-01-05", 500000),
+('Ethan', 'Price', 'ethan.price@northbridge.com', 1, 3, "2019-01-01", 90000),
+('Sophia', 'Lopez', 'sophia.lopez@summitridge.com', 2, 3, "2025-06-30", 70000);
 
 -- =========================
 -- Customer to Product (many-to-many)

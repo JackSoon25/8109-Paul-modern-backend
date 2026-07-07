@@ -50,7 +50,7 @@ app.get('/', function (req, res) {
 app.get('/customers', async function (req, res) {
 
     // extract out the user search terms from the form
-    const { first_name, last_name } = req.query;
+    const { first_name, last_name, joined_before, joined_after } = req.query;
 
     // base query: returns all customers
     let sql = `
@@ -71,6 +71,16 @@ app.get('/customers', async function (req, res) {
     if (last_name) {
         sql += " AND last_name LIKE ?";
         bindings.push("%" + last_name + "%");
+    }
+
+    if (joined_before) {
+        sql += " AND date_joined < ?";
+        bindings.push(joined_before);
+    }
+
+    if (joined_after) {
+        sql += " AND date_joined > ?";
+        bindings.push(joined_after);
     }
 
     sql += " ORDER BY Customers.first_name, Customers.last_name";
