@@ -28,6 +28,43 @@ router.get('/', async function (req, res) {
 
 })
 
+router.get('/search', async function(req,res){
+    // extract out the query string
+    const query = req.query.searchTerms;
+
+    if (!query) {
+        return res.redirect('/products');
+    }
+
+    // create the embedding from query
+    const queryEmbedding = await generateEmbedding(query);
+    const vectorString = '[' + queryEmbedding + ']';
+
+    // do the vector search
+    const [results] = await connection.execute(`
+        SELECT DISTINCT
+            Products.product_id,
+            Products.name,
+            Products.description,
+            Products.pdf_id,
+            PDF.filename,
+            PDF.original_filename,
+            PDFChunks.chunk_text,
+            VEC_DISTANCE(PDFChunks.embedding, VEC_FromText(?)) as distance
+        FROM PDFChunks
+            JOIN PDF on PDFChunks.pdf_id = PDF.pdf_id
+            JOIN Products on Products.pdf_id = PDF.pdf_id
+        ORDER BY DISTANCE ASC
+        LIMIT 10
+        `, [vectorString])
+
+    res.render('products/search', {
+        query: query,
+        results: results
+    })
+})
+
+
 router.get('/:product_id', async function (req, res) {
     const [products] = await connection.execute({
         sql: 'SELECT * from Products LEFT JOIN PDF ON Products.pdf_id = PDF.pdf_id WHERE product_id = ?',
@@ -55,7 +92,6 @@ router.get('/:product_id/upload', async function (req, res) {
 
 // route to process file upload
 router.post('/:product_id/upload', async function (req, res) {
-    console.log(req.files);
     const conn = await connection.getConnection();
     try {
         await conn.beginTransaction();
@@ -135,6 +171,7 @@ router.post('/:product_id/upload', async function (req, res) {
 
 
 })
+
 
 // whatever is exported is available for other JS files in the same nodejs application to use
 module.exports = router;
