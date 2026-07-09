@@ -90,3 +90,130 @@ SELECT * FROM customers ORDER BY creditLimit DESC;
 -- Limit the number of rows returned
 -- sort the customers by credit limit (default is ascending order)
 SELECT * FROM customers ORDER BY creditLimit DESC LIMIT 10;
+
+-- JOINING TABLES
+
+-- get first name, last name and office address for each employee
+-- we have JOIN both tables together first
+SELECT firstName, lastName, city, addressLine1, addressLine2, state, country FROM employees JOIN offices
+         ON employees.officeCode = offices.officeCode;
+
+-- all other clauses happen on the JOINed table
+SELECT firstName, lastName, city, addressLine1, addressLine2, state, country 
+         FROM employees JOIN offices
+         ON employees.officeCode = offices.officeCode
+WHERE country="USA";
+
+-- for columns that are repeated, we need to state which table to take from (eg: offices.officeCode)
+SELECT firstName, lastName, email, offices.officeCode, city, addressLine1, addressLine2, state, country 
+         FROM employees JOIN offices
+         ON employees.officeCode = offices.officeCode
+WHERE country="USA";
+
+-- it is possible to give alias to tables when you join them
+SELECT firstName, lastName, email, o.officeCode, city, addressLine1, addressLine2, state, country 
+         FROM employees AS e JOIN offices AS o
+         ON e.officeCode = o.officeCode
+WHERE country="USA";
+
+
+-- When we do a join, for a row on the LHS to appear, it must be joined to a corresponding
+-- row on the RHS
+SELECT * FROM customers JOIN employees
+         ON customers.salesRepEmployeeNumber = employees.employeeNumber;
+
+-- the default join is a INNER JOIN
+-- there is also the LEFT JOIN and RIGHT JOIN
+
+-- When we do LEFT join, the LHS all ROWS WILL BE IN THE FINAL RESULT
+-- even if no counterpart is found in the other table (the below should show 122 because
+-- that's the total number of customers)
+SELECT COUNT(*) FROM customers LEFT JOIN employees
+         ON customers.salesRepEmployeeNumber = employees.employeeNumber;
+
+-- 1. identify the tables
+-- orders, customers
+-- 2. identify the FK and the primary KEY
+-- the FK is in the MANY side of the relationship
+-- customers and orders are in a 1:M relationship
+-- the FK is orders.customerNumber and the PK is customers.customerNumber
+SELECT * FROM customers JOIN orders
+         ON customers.customerNumber = orders.customerNumber
+		 WHERE country = "USA" AND status="Shipped";
+
+-- 1. identify the tables
+-- orders, customers
+-- 2. identify the FK and the primary KEY
+-- the FK is in the MANY side of the relationship
+-- customers and orders are in a 1:M relationship
+-- the FK is orders.customerNumber and the PK is customers.customerNumber
+SELECT customerName, status, orderDate, shippedDate, lastName, firstName FROM customers JOIN orders
+        	 ON customers.customerNumber = orders.customerNumber
+		 JOIN employees
+		     ON customers.salesRepEmployeeNumber = employees.employeeNumber
+		 WHERE country = "USA" AND status="Shipped" 
+		 ORDER BY orderDate;
+
+-- dates processing in MySQL
+-- find all the orders that shipped in the year 2003
+SELECT * FROM orders WHERE shippedDate BETWEEN "2003-01-01" AND "2003-12-31";
+
+-- the YEAR, MONTH and DAY functions can extract out the components of a date
+SELECT orderDate, YEAR(orderDate), MONTH(orderDate), DAY(orderDate) FROM orders;
+
+-- show all orders that take place in the four first weeks of 2003
+SELECT * FROM orders WHERE YEAR(orderDate) = 2003 AND WEEK(orderDate) <=4;
+
+-- AGGREGATE FUNCTIONS
+-- 1. COUNT
+-- 2. SUM
+-- 3. AVG
+-- 4. MIN
+-- 5. MAX
+
+-- find the highest credit limit among all the customers
+SELECT MAX(creditLimit) FROM customers;
+
+-- find the customer with the highest credit limit
+-- (using a sub query)
+SELECT * FROM customers WHERE creditLimit = (SELECT MAX(creditLimit) FROM customers);
+
+-- find the average price of payments made by customer 103
+select avg(amount) from payments where customerNumber = 103;
+
+-- how many employees are there for each office code?
+-- we use GROUP BY
+select officeCode, count(*) FROM employees
+GROUP BY officeCode
+
+-- how many customers are there in each country?
+select country, count(*) FROM customers
+GROUP BY country;
+
+-- 1. Determine what is the grouping criteria
+-- 2. Do the aggregate function in the SELECT
+-- 3. Whatever you group by, you must select
+SELECT officeCode, count(*) FROM employees GROUP BY officeCode;
+
+-- for each customer, I want to see their TOTAL payment made over the entire lifetime
+-- of the database
+SELECT customerNumber, SUM(amount) FROM payments
+GROUP BY customerNumber
+
+-- for each customer, I want to see their TOTAL payment made over the entire lifetime
+-- of the database
+SELECT customers.customerNumber, customerName, SUM(amount) FROM payments
+  JOIN customers ON 
+  	   customers.customerNumber = payments.customerNumber
+GROUP BY customers.customerNumber, customerName
+
+-- for each customer, I want to see their TOTAL payment made over the entire lifetime
+-- of the database
+SELECT customers.customerNumber, customerName, SUM(amount) FROM payments
+  JOIN customers ON 
+  	   customers.customerNumber = payments.customerNumber
+WHERE country = "USA"
+GROUP BY customers.customerNumber, customerName
+HAVING SUM(amount) >= 40000
+ORDER BY SUM(amount) ASC
+LIMIT 10;
